@@ -1,0 +1,21 @@
+[SparkPost]
+# Set the host to use here - if using SparkPost EU or Enterprise
+Host = api.eu.sparkpost.com
+
+# Your API key here - must have Recipient Validation permissions checked
+Authorization = <YOUR API KEY>
+
+# How many concurrent threads Python will use for requests.
+Threads = 10
+
+# Optional. File encodings used for reading your file during check/update/delete/retrieve.
+# Default value is utf-8. You can give a list of encodings to try, the tool will try each in turn until the file
+# reads properly.
+# If your file fails to read, check possible values to use on: https://docs.python.org/3.6/library/codecs.html#standard-encodings
+# For hints, see also: http://python-notes.curiousefficiency.org/en/latest/python3/text_file_processing.html
+#
+# For retrieve, the first encoding in the list is used to write the file.
+FileCharacterEncodings=utf-8,utf-16,ascii,latin-1
+
+# Optional. Tune the snooze time used when 429 rate-limiting replies received.
+SnoozeTime = 120
