@@ -2,16 +2,17 @@
 
 [Sign up](https://app.sparkpost.com/join?plan=free-0817?src=Social%20Media&sfdcid=70160000000pqBb&pc=GitHubSignUp&utm_source=github&utm_medium=social-media&utm_campaign=github&utm_content=sign-up) for a SparkPost account and visit our [Developer Hub](https://developers.sparkpost.com) for even more content.
 
-# sparky
+# sparkyRecipValidate
 [![Build Status](https://travis-ci.org/tuck1s/sparkyRecipValidate.svg?branch=master)](https://travis-ci.org/tuck1s/sparkyRecipValidate)
+
 
 ## Easy installation
 
-Firstly ensure you have `python3`, `pip` and `git`. Recommended - install `pipenv`:
+Firstly ensure you have `python3`, `pip` and `git`. Install `pipenv`:
 
 `pip install pipenv`
 
-Get the project, and install with dependencies.
+Get the project, and install dependencies.
 
 ```
 git clone https://github.com/tuck1s/sparkyRecipValidate.git
