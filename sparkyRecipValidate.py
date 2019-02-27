@@ -4,6 +4,7 @@ import argparse, configparser, time, csv, requests
 from email_validator import validate_email, EmailNotValidError
 from common import eprint
 
+
 def getConfig(configFile):
     """
     Read SparkPost API sending config (or SMTP sending config) from file
@@ -50,9 +51,9 @@ def validateRecipient(url, apiKey, recip, snooze):
             if response.status_code == 200:
                 return response.json()
             elif response.status_code == 429:
-                eprint(response.json(),'.. pausing', snooze, 'seconds for rate-limiting')
+                eprint(response.json(), '.. pausing', snooze, 'seconds for rate-limiting')
                 time.sleep(snooze)
-                continue                # try again
+                continue  # try again
             else:
                 eprint('Error:', response.status_code, ':', response.text)
                 return None
@@ -90,7 +91,7 @@ def processFile(infile, outfile, url, apiKey, threads, snooze, skip_precheck):
             else:
                 count_bad += 1
         eprint('Scanned input file {}, contains {} syntactically OK and {} bad addresses. Validating with SparkPost..'
-            .format(infile.name, count_ok, count_bad))
+               .format(infile.name, count_ok, count_bad))
         infile.seek(0)
     else:
         eprint('Skipping input file syntax pre-check. Validating with SparkPost..')
@@ -120,8 +121,10 @@ def processFile(infile, outfile, url, apiKey, threads, snooze, skip_precheck):
 parser = argparse.ArgumentParser(
     description='Validate recipients with SparkPost. Reads from specified input file (or stdin), \
     results to specified output file or stdout (i.e. can act as a filter)')
-parser.add_argument('-i', '--infile', type=argparse.FileType('r'), default='-', help='filename to read email recipients from (in .CSV format)')
-parser.add_argument('-o', '--outfile', type=argparse.FileType('w'), default='-', help='filename to write validation results to (in .CSV format)')
+parser.add_argument('-i', '--infile', type=argparse.FileType('r'), default='-',
+                    help='filename to read email recipients from (in .CSV format)')
+parser.add_argument('-o', '--outfile', type=argparse.FileType('w'), default='-',
+                    help='filename to write validation results to (in .CSV format)')
 parser.add_argument('--skip_precheck', action='store_true', help='Skip the precheck of input file email syntax')
 args = parser.parse_args()
 cfg = getConfig('sparkpost.ini')
