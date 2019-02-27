@@ -50,11 +50,6 @@ optional arguments:
   --skip_precheck       Skip the precheck of input file email syntax
 ```
 
-The email syntax pre-check uses [this library](https://pypi.org/project/email_validator/) and is fast. It 
-also reports how many addresses are in the file before API-based validation starts.
-
-If input is coming from a stdin stream, e.g. piped in and therefore not a seekable file, the pre-check will also be skipped.
-
 ## Example output
 
 The program can act as a Unix-style "filter" so you can pipe / redirect input and output; alternatively you
@@ -90,6 +85,34 @@ sweettomatoes@hottomattoes.com,False,Invalid Domain,False,False
 ```
 
 Excel or [csvkit](https://csvkit.readthedocs.io) may be helpful to work with these files.
+
+## Input file email syntax check
+
+The email syntax pre-check uses [this library](https://pypi.org/project/email_validator/) and is fast. It 
+also reports how many addresses are in the file before API-based validation starts.
+
+If input is coming from a stream, and therefore not seekable, the pre-check will also be skipped:
+
+Piping in, as expected, is not seekable:
+```
+$ cat valtest.csv | ./sparkyRecipValidate.py >result3.csv
+Skipping input file syntax pre-check. Validating with SparkPost..
+Done
+```
+
+Redirection with `<` is (perhaps surprisingly) seekable:
+```
+$ ./sparkyRecipValidate.py <valtest.csv >result2.csv
+Scanned input file <stdin>, contains 15 syntactically OK and 0 bad addresses. Validating with SparkPost..
+Done
+```
+
+Specifying input file is seekable:
+```
+$ ./sparkyRecipValidate.py -i valtest.csv >result2.csv
+Scanned input file valtest.csv, contains 15 syntactically OK and 0 bad addresses. Validating with SparkPost..
+Done
+```
 
 ## See Also
 [SparkPost Developer Hub](https://developers.sparkpost.com/)
