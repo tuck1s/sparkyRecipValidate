@@ -1,37 +1,8 @@
 #!/usr/bin/env python3
 
-import argparse, configparser, time, csv, requests
+import argparse, time, csv, requests
 from email_validator import validate_email, EmailNotValidError
-from common import eprint
-
-
-def getConfig(configFile):
-    """
-    Read SparkPost API sending config (or SMTP sending config) from file
-    :param configFile: str
-    :return: dict
-    """
-    cp = configparser.ConfigParser()
-    cp.read_file(open(configFile))
-    section = cp['SparkPost']
-    cfg = {
-        'Host': section.get('Host', 'https://api.sparkpost.com'),
-        'Authorization': section.get('Authorization'),
-        'Threads': section.getint('Threads', 10),
-        'FileCharacterEncodings': section.get('FileCharacterEncodings'),
-        'SnoozeTime': section.getint('SnoozeTime')
-    }
-    # Clean up Host parameter
-    if not cfg['Host'].startswith('https://'):
-        cfg['Host'] = 'https://' + cfg['Host']
-    if cfg['Host'].endswith('/'):
-        cfg['Host'] = cfg['Host'][:-1]  # Strip /
-
-    if cfg['Authorization'] == None:
-        eprint('Error: missing Authorization line in ' + configFile)
-        exit(1)
-    else:
-        return cfg
+from common import eprint, getenv_check, getenv, hostCleanup
 
 
 def validateRecipient(url, apiKey, recip, snooze):
@@ -63,7 +34,7 @@ def validateRecipient(url, apiKey, recip, snooze):
         exit(1)
 
 
-def processFile(infile, outfile, url, apiKey, threads, snooze, skip_precheck):
+def processFile(infile, outfile, url, apiKey, snooze, skip_precheck):
     """
     Process the input file - a list of email addresses to validate. Write results to outfile.
     Two pass approach. First pass checks file is readable and contains email addresses. Second pass calls validation.
@@ -127,6 +98,9 @@ parser.add_argument('-o', '--outfile', type=argparse.FileType('w'), default='-',
                     help='filename to write validation results to (in .CSV format)')
 parser.add_argument('--skip_precheck', action='store_true', help='Skip the precheck of input file email syntax')
 args = parser.parse_args()
-cfg = getConfig('sparkpost.ini')
-url = cfg['Host'] + '/api/v1/recipient-validation/single/'
-processFile(args.infile, args.outfile, url, cfg['Authorization'], cfg['Threads'], cfg['SnoozeTime'], args.skip_precheck)
+
+apiKey = getenv_check('SPARKPOST_API_KEY')                      # API key is mandatory
+host = hostCleanup(getenv('SPARKPOST_HOST', default='api.sparkpost.com'))
+url = host + '/api/v1/recipient-validation/single/'
+
+processFile(args.infile, args.outfile, url, apiKey, 120, args.skip_precheck)

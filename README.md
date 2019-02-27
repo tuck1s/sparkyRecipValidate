@@ -24,11 +24,16 @@ pipenv shell
 You can now type `./sparkyRecipValidate.py -h` and see usage info.
 
 ## Pre-requisites
-Set up the `sparkpost.ini` file as per the example file. 
-Replace `<YOUR API KEY>` with your specific, private API key. 
 
-`Host` is only needed for SparkPost EU and SparkPost Enterprise service usage; you can omit for US-hosted [sparkpost.com](https://www.sparkpost.com/).
+Set the following environment variables:
 
+```
+SPARKPOST_HOST (optional)
+    The URL of the SparkPost API service you're using. Defaults to https://api.sparkpost.com.
+
+SPARKPOST_API_KEY
+    API key on your SparkPost account, with Recipient Validation rights.
+```
 
 ## Usage
 
@@ -53,7 +58,7 @@ optional arguments:
 ## Example output
 
 The program can act as a Unix-style "filter" so you can pipe / redirect input and output; alternatively you
-can use the `'-i` and '-o` options to specify input and output files.
+can use the `-i` and `-o` options to specify input and output files.
 
 An example input file is included in the project. Progress reporting is sent to stderr, so it doesn't
 interfere with stdout. Here is a filter example, then displaying the output file.

@@ -18,6 +18,10 @@ before_script:
 script:
   # basic tests - command line tool installed and gives help/usage
   - ./sparkyRecipValidate.py -h
+  # fuller test - runs with specified file, with various input / output cases
+  - ./sparkyRecipValidate.py <valtest.csv >results.csv
+  - ./sparkyRecipValidate.py -i valtest.csv -o results2.csv
+  - cat valtest.csv | ./sparkyRecipValidate.py > results2.csv
 
 branches:
   only:
