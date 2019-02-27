@@ -121,26 +121,27 @@ Done
 
 ## Input file email syntax check
 
-The email syntax pre-check uses [this library](https://pypi.org/project/email_validator/) and is fast. It 
-also reports how many addresses are in the file before API-based validation starts.
+The email syntax pre-check uses [this library](https://pypi.org/project/email_validator/) and adds minimal runtime overhead.
+It also reports how many addresses are in the file before API-based validation starts.
 
-If input is coming from a stream, and therefore not seekable, the pre-check will also be skipped:
+You can skip the pre-check using the command-line flag shown under "Usage". 
+If input is coming from a stream, and therefore not seekable, the pre-check will also be skipped.
 
-Piping in, as expected, is not seekable:
+Piping in, as you might expect, not seekable:
 ```
 $ cat valtest.csv | ./sparkyRecipValidate.py >result3.csv
 Skipping input file syntax pre-check. Validating with SparkPost..
 Done
 ```
 
-Redirection with `<` is (perhaps surprisingly) seekable:
+Redirection with `<` is (perhaps surprisingly) seekable on many systems, and will run the pre-check unless skipped:
 ```
 $ ./sparkyRecipValidate.py <valtest.csv >result2.csv
 Scanned input file <stdin>, contains 15 syntactically OK and 0 bad addresses. Validating with SparkPost..
 Done
 ```
 
-Specifying input file is seekable:
+Specifying the input file with `-i` is seekable, and will run the pre-check unless skipped:
 ```
 $ ./sparkyRecipValidate.py -i valtest.csv >result2.csv
 Scanned input file valtest.csv, contains 15 syntactically OK and 0 bad addresses. Validating with SparkPost..
