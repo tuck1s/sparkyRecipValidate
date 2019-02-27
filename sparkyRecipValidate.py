@@ -108,6 +108,9 @@ def processFile(infile, outfile, url, apiKey, threads, snooze, skip_precheck):
             fh.writerow(row)
         else:
             eprint('Error: response {}'.format(res))
+
+    infile.close()
+    outfile.close()
     eprint('Done')
 
 
