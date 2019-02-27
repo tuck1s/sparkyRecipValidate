@@ -65,8 +65,10 @@ can use the `-i` and `-o` options to specify input and output files.
 An example input file is included in the project. Progress reporting is sent to stderr, so it doesn't
 interfere with stdout. Here is a filter example, then displaying the output file.
 
-The output file follows the same form as the SparkPost web application. Note however that
-*all* your address results are reported, not just the rejected ones.
+The output file follows the same form as the SparkPost web application. Note that
+*all* your address results are reported, not just the rejected ones (unlike the web UI validation).
+
+Each validation makes a single API call, so this can take a while to run.
 
 ```
 $ ./sparkyRecipValidate.py <valtest.csv >out.csv
