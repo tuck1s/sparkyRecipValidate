@@ -73,24 +73,27 @@ def processFile(infile, outfile, url, apiKey, threads, snooze):
     :param threads: int
     :param snooze: int
     """
-    f = csv.reader(infile)
-    count_OK, count_bad = 0, 0
-    # Check & report syntactically-OK & bad email addresses before we start API-based validation
-    for r in f:
-        if len(r) == 1:
-            recip = r[0]
-            try:
-                validate_email(recip, check_deliverability=False)
-                count_OK += 1
-            except EmailNotValidError as e:
-                # email is not valid, exception message is human-readable
-                eprint(f.line_num, recip, str(e))
+    if infile.seekable():
+        # Check & report syntactically-OK & bad email addresses before we start API-based validation, if we can
+        f = csv.reader(infile)
+        count_ok, count_bad = 0, 0
+        for r in f:
+            if len(r) == 1:
+                recip = r[0]
+                try:
+                    validate_email(recip, check_deliverability=False)
+                    count_ok += 1
+                except EmailNotValidError as e:
+                    # email is not valid, exception message is human-readable
+                    eprint(f.line_num, recip, str(e))
+                    count_bad += 1
+            else:
                 count_bad += 1
-        else:
-            count_bad += 1
-    eprint('Scanned input file {}, contains {} syntactically OK and {} bad addresses. Validating ..'.format(infile.name, count_OK, count_bad))
+        eprint('Scanned input file {}, contains {} syntactically OK and {} bad addresses. Validating ..'.format(infile.name, count_ok, count_bad))
+        infile.seek(0)
+    else:
+        eprint('Skipping first-pass syntax check. Validating ..')
 
-    infile.seek(0)
     f = csv.reader(infile)
     fList = ['email', 'valid', 'reason', 'is_role', 'is_disposable']
     fh = csv.DictWriter(outfile, fieldnames=fList, restval='', extrasaction='ignore')
