@@ -62,7 +62,7 @@ def validateRecipient(url, apiKey, recip, snooze):
         exit(1)
 
 
-def processFile(infile, outfile, url, apiKey, threads, snooze):
+def processFile(infile, outfile, url, apiKey, threads, snooze, skip_precheck):
     """
     Process the input file - a list of email addresses to validate. Write results to outfile.
     Two pass approach. First pass checks file is readable and contains email addresses. Second pass calls validation.
@@ -73,7 +73,7 @@ def processFile(infile, outfile, url, apiKey, threads, snooze):
     :param threads: int
     :param snooze: int
     """
-    if infile.seekable():
+    if infile.seekable() and not skip_precheck:
         # Check & report syntactically-OK & bad email addresses before we start API-based validation, if we can
         f = csv.reader(infile)
         count_ok, count_bad = 0, 0
@@ -89,10 +89,11 @@ def processFile(infile, outfile, url, apiKey, threads, snooze):
                     count_bad += 1
             else:
                 count_bad += 1
-        eprint('Scanned input file {}, contains {} syntactically OK and {} bad addresses. Validating ..'.format(infile.name, count_ok, count_bad))
+        eprint('Scanned input file {}, contains {} syntactically OK and {} bad addresses. Validating with SparkPost..'
+            .format(infile.name, count_ok, count_bad))
         infile.seek(0)
     else:
-        eprint('Skipping first-pass syntax check. Validating ..')
+        eprint('Skipping input file syntax pre-check. Validating with SparkPost..')
 
     f = csv.reader(infile)
     fList = ['email', 'valid', 'reason', 'is_role', 'is_disposable']
@@ -118,7 +119,8 @@ parser = argparse.ArgumentParser(
     results to specified output file or stdout (i.e. can act as a filter)')
 parser.add_argument('-i', '--infile', type=argparse.FileType('r'), default='-', help='filename to read email recipients from (in .CSV format)')
 parser.add_argument('-o', '--outfile', type=argparse.FileType('w'), default='-', help='filename to write validation results to (in .CSV format)')
+parser.add_argument('--skip_precheck', action='store_true', help='Skip the precheck of input file email syntax')
 args = parser.parse_args()
 cfg = getConfig('sparkpost.ini')
 url = cfg['Host'] + '/api/v1/recipient-validation/single/'
-processFile(args.infile, args.outfile, url, cfg['Authorization'], cfg['Threads'], cfg['SnoozeTime'])
+processFile(args.infile, args.outfile, url, cfg['Authorization'], cfg['Threads'], cfg['SnoozeTime'], args.skip_precheck)

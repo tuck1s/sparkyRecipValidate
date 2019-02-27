@@ -34,7 +34,7 @@ Replace `<YOUR API KEY>` with your specific, private API key.
 
 ```
 $ ./sparkyRecipValidate.py -h
-usage: sparkyRecipValidate.py [-h] [-i INFILE] [-o OUTFILE]
+usage: sparkyRecipValidate.py [-h] [-i INFILE] [-o OUTFILE] [--skip_precheck]
 
 Validate recipients with SparkPost. Reads from specified input file (or
 stdin), results to specified output file or stdout (i.e. can act as a filter)
@@ -47,7 +47,13 @@ optional arguments:
   -o OUTFILE, --outfile OUTFILE
                         filename to write validation results to (in .CSV
                         format)
+  --skip_precheck       Skip the precheck of input file email syntax
 ```
+
+The email syntax pre-check uses [this library](https://pypi.org/project/email_validator/) and is fast. It 
+also reports how many addresses are in the file before API-based validation starts.
+
+If input is coming from a stdin stream, e.g. piped in and therefore not a seekable file, the pre-check will also be skipped.
 
 ## Example output
 
@@ -61,7 +67,7 @@ The output file follows the same form as the SparkPost web application.
 
 ```
 $ ./sparkyRecipValidate.py <valtest.csv >out.csv
-Scanned input file <stdin>, contains 15 syntactically OK and 0 bad addresses. Validating ..
+Scanned input file <stdin>, contains 15 syntactically OK and 0 bad addresses. Validating with SparkPost..
 Done
 
 $ cat out.csv
@@ -88,4 +94,4 @@ Excel or [csvkit](https://csvkit.readthedocs.io) may be helpful to work with the
 ## See Also
 [SparkPost Developer Hub](https://developers.sparkpost.com/)
 
-
+[Recipient Validation SparkPost API endpoint](https://developers.sparkpost.com/api/recipient-validation/)
