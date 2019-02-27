@@ -12,6 +12,8 @@ Firstly ensure you have `python3`, `pip` and `git`. Install `pipenv`:
 
 `pip install pipenv`
 
+(Depending on how it was installed, you might need to type `pip3 install pipenv` instead).
+
 Get the project, and install dependencies.
 
 ```
@@ -25,7 +27,7 @@ You can now type `./sparkyRecipValidate.py -h` and see usage info.
 
 ## Pre-requisites
 
-Set the following environment variables:
+Set the following environment variables. Note these are case-sensitive.
 
 ```
 SPARKPOST_HOST (optional)
@@ -63,7 +65,8 @@ can use the `-i` and `-o` options to specify input and output files.
 An example input file is included in the project. Progress reporting is sent to stderr, so it doesn't
 interfere with stdout. Here is a filter example, then displaying the output file.
 
-The output file follows the same form as the SparkPost web application.
+The output file follows the same form as the SparkPost web application. Note however that
+*all* your address results are reported, not just the rejected ones.
 
 ```
 $ ./sparkyRecipValidate.py <valtest.csv >out.csv
@@ -89,7 +92,30 @@ abc@yahoo.com,False,Invalid Recipient,False,False
 sweettomatoes@hottomattoes.com,False,Invalid Domain,False,False
 ```
 
-Excel or [csvkit](https://csvkit.readthedocs.io) may be helpful to work with these files.
+Excel or [csvkit](https://csvkit.readthedocs.io) may be helpful to work with these files, for example
+
+```
+$ ./sparkyRecipValidate.py -i valtest.csv | csvlook
+Scanned input file valtest.csv, contains 15 syntactically OK and 0 bad addresses. Validating with SparkPost..
+Done
+| email                            | valid | reason            | is_role | is_disposable |
+| -------------------------------- | ----- | ----------------- | ------- | ------------- |
+| postmaster@yahoo.com             |  True |                   |    True |         False |
+| admin@geekswithapersonality.com  |  True |                   |    True |         False |
+| dahoju@heximail.com              |  True |                   |   False |         False |
+| gpiohwxy@sharklasers.com         |  True |                   |   False |          True |
+| kobapracro@memeil.top            | False | Invalid Domain    |   False |          True |
+| planetaryhacksaw@maildrop.cc     |  True |                   |   False |          True |
+| austein@yopmail.com              |  True |                   |   False |          True |
+| vemugi@banit.me                  |  True |                   |   False |          True |
+| sales@sparkpost.com              |  True |                   |    True |         False |
+| jeff+friendly@messagesystems.com |  True |                   |   False |         False |
+| 123a@gmail.com                   | False | Invalid Recipient |   False |         False |
+| sam@hotmal.com                   |  True |                   |   False |         False |
+| abc@yahoo.com                    |  True |                   |   False |         False |
+| 123@hotmail.com                  | False | Invalid Recipient |   False |         False |
+| sweettomatoes@hottomattoes.com   | False | Invalid Domain    |   False |         False |
+```
 
 ## Input file email syntax check
 
