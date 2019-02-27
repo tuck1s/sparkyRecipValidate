@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
-from datetime import datetime,timedelta
-import argparse, configparser, time, sys, os, csv, requests
-from requests.compat import urljoin
-import persistentRequestThreads
+import argparse, configparser, time, csv, requests
+from email_validator import validate_email, EmailNotValidError
 from common import eprint
 
 def getConfig(configFile):
@@ -35,21 +33,17 @@ def getConfig(configFile):
         return cfg
 
 
-def helloWorld():
-    return 'hello'
-
-
 def validateRecipient(url, apiKey, recip, snooze):
     """
-    Validate a single recipient
+    Validate a single recipient. Allows for possible future rate-liming on this endpoint.
     :param url: SparkPost URL including the endpoint
     :param apiKey: SparkPost API key
     :param recip: single recipient
-    :return:
+    :return: dict containing JSON-decode of response
     """
     try:
         h = {'Authorization': apiKey, 'Accept': 'application/json'}
-        thisReq = urljoin(url, recip)
+        thisReq = requests.compat.urljoin(url, recip)
         # Allow for possible rate-limiting responses in future, even if not happening now
         while True:
             response = requests.get(thisReq, timeout=60, headers=h)
@@ -81,10 +75,17 @@ def processFile(infile, outfile, url, apiKey, threads, snooze):
     """
     f = csv.reader(infile)
     count_OK, count_bad = 0, 0
-    # very simple, superficial check for valid inputs before we start validation
+    # Check & report syntactically-OK & bad email addresses before we start API-based validation
     for r in f:
-        if len(r) == 1 and '@' in r[0]:
-            count_OK += 1
+        if len(r) == 1:
+            recip = r[0]
+            try:
+                validate_email(recip, check_deliverability=False)
+                count_OK += 1
+            except EmailNotValidError as e:
+                # email is not valid, exception message is human-readable
+                eprint(f.line_num, recip, str(e))
+                count_bad += 1
         else:
             count_bad += 1
     eprint('Scanned input file {}, contains {} syntactically OK and {} bad addresses. Validating ..'.format(infile.name, count_OK, count_bad))
@@ -94,7 +95,6 @@ def processFile(infile, outfile, url, apiKey, threads, snooze):
     fList = ['email', 'valid', 'reason', 'is_role', 'is_disposable']
     fh = csv.DictWriter(outfile, fieldnames=fList, restval='', extrasaction='ignore')
     fh.writeheader()
-    recipBatch = []
     for r in f:
         recip = r[0]
         res = validateRecipient(url, apiKey, recip, snooze)
@@ -118,5 +118,4 @@ parser.add_argument('-o', '--outfile', type=argparse.FileType('w'), default='-',
 args = parser.parse_args()
 cfg = getConfig('sparkpost.ini')
 url = cfg['Host'] + '/api/v1/recipient-validation/single/'
-
 processFile(args.infile, args.outfile, url, cfg['Authorization'], cfg['Threads'], cfg['SnoozeTime'])
