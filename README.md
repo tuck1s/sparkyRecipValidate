@@ -40,27 +40,48 @@ SPARKPOST_API_KEY
 ## Usage
 
 ```
-$ ./sparkyRecipValidate.py -h
-usage: sparkyRecipValidate.py [-h] [-i INFILE] [-o OUTFILE] [--skip_precheck]
+./sparkyRecipValidate.py -h
+usage: sparkyRecipValidate.py [-h] [-i INFILE | -e EMAIL] [-o OUTFILE]
+                              [--skip_precheck]
 
-Validate recipients with SparkPost. Reads from specified input file (or
-stdin), results to specified output file or stdout (i.e. can act as a filter)
+Validate recipients with SparkPost. Checks a single email address, or reads
+from specified input file (or stdin). Results to specified output file or
+stdout (i.e. can act as a filter).
 
 optional arguments:
   -h, --help            show this help message and exit
   -i INFILE, --infile INFILE
                         filename to read email recipients from (in .CSV
                         format)
+  -e EMAIL, --email EMAIL
+                        email address to validate. May carry multiple
+                        addresses, comma-separated, no spaces
   -o OUTFILE, --outfile OUTFILE
                         filename to write validation results to (in .CSV
                         format)
   --skip_precheck       Skip the precheck of input file email syntax
 ```
 
-## Example output
+## Command-line email addresses
 
-The program can act as a Unix-style "filter" so you can pipe / redirect input and output; alternatively you
-can use the `-i` and `-o` options to specify input and output files.
+After setting your env variables, you can provide one or more email addresses directly on the command-line.
+Recipient addresses should be comma-separated with no spaces.
+
+```
+export SPARKPOST_HOST=api.eu.sparkpost.com
+export SPARKPOST_API_KEY=<YOUR KEY HERE>
+./sparkyRecipValidate.py --email 123@gmail.com,bill.gates@microsoft.com
+Scanned input from command line, contains 2 syntactically OK and 0 bad addresses. Validating with SparkPost..
+email,valid,reason,is_role,is_disposable
+123@gmail.com,False,Invalid Recipient,False,False
+bill.gates@microsoft.com,True,,False,False
+Done
+```
+
+## File input / output
+
+The program can act as a Unix-style "filter" so you can pipe / redirect input and output.
+Alternatively, you can use the `-i` and `-o` options to specify input and output files.
 
 An example input file is included in the project. Progress reporting is sent to stderr, so it doesn't
 interfere with stdout. Here is a filter example, then displaying the output file.
@@ -70,12 +91,14 @@ The output file follows the same form as the SparkPost web application. Note tha
 
 Each validation makes a single API call, so this can take a while to run.
 
+Comfort reporting goes to `stderr` so you can redirect the actual output to a file.
+
 ```
-$ ./sparkyRecipValidate.py <valtest.csv >out.csv
+./sparkyRecipValidate.py <valtest.csv >out.csv
 Scanned input file <stdin>, contains 15 syntactically OK and 0 bad addresses. Validating with SparkPost..
 Done
 
-$ cat out.csv
+cat out.csv
 email,valid,reason,is_role,is_disposable
 postmaster@yahoo.com,True,,True,False
 admin@geekswithapersonality.com,True,,True,False
@@ -121,7 +144,7 @@ Done
 
 ## Input file email syntax check
 
-The email syntax pre-check uses [this library](https://pypi.org/project/email_validator/) and adds minimal runtime overhead.
+The email syntax pre-check uses [this library](https://pypi.org/project/email_validator/), runs locally, and adds minimal runtime overhead.
 It also reports how many addresses are in the file before API-based validation starts.
 
 You can skip the pre-check using the command-line flag shown under "Usage". 
@@ -151,4 +174,7 @@ Done
 ## See Also
 [SparkPost Developer Hub](https://developers.sparkpost.com/)
 
+[Recipient Validation](https://www.sparkpost.com/docs/tech-resources/recipient-validation-sparkpost/)
+
 [Recipient Validation SparkPost API endpoint](https://developers.sparkpost.com/api/recipient-validation/)
+

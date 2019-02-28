@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import argparse, time, csv, requests
+import argparse, time, csv, requests, io
 from email_validator import validate_email, EmailNotValidError
 from common import eprint, getenv_check, getenv, hostCleanup
 
@@ -61,7 +61,7 @@ def processFile(infile, outfile, url, apiKey, snooze, skip_precheck):
                     count_bad += 1
             else:
                 count_bad += 1
-        eprint('Scanned input file {}, contains {} syntactically OK and {} bad addresses. Validating with SparkPost..'
+        eprint('Scanned input {}, contains {} syntactically OK and {} bad addresses. Validating with SparkPost..'
                .format(infile.name, count_ok, count_bad))
         infile.seek(0)
     else:
@@ -90,10 +90,14 @@ def processFile(infile, outfile, url, apiKey, snooze, skip_precheck):
 # Main code
 # -----------------------------------------------------------------------------------------
 parser = argparse.ArgumentParser(
-    description='Validate recipients with SparkPost. Reads from specified input file (or stdin), \
-    results to specified output file or stdout (i.e. can act as a filter)')
-parser.add_argument('-i', '--infile', type=argparse.FileType('r'), default='-',
+    description='Validate recipients with SparkPost. \
+        Checks a single email address, or reads from specified input file (or stdin). \
+        Results to specified output file or stdout (i.e. can act as a filter).')
+inp = parser.add_mutually_exclusive_group(required=False)
+inp.add_argument('-i', '--infile', type=argparse.FileType('r'), default='-',
                     help='filename to read email recipients from (in .CSV format)')
+inp.add_argument('-e', '--email', type=str, action='store',
+                    help='email address to validate. May carry multiple addresses, comma-separated, no spaces')
 parser.add_argument('-o', '--outfile', type=argparse.FileType('w'), default='-',
                     help='filename to write validation results to (in .CSV format)')
 parser.add_argument('--skip_precheck', action='store_true', help='Skip the precheck of input file email syntax')
@@ -103,4 +107,9 @@ apiKey = getenv_check('SPARKPOST_API_KEY')                      # API key is man
 host = hostCleanup(getenv('SPARKPOST_HOST', default='api.sparkpost.com'))
 url = host + '/api/v1/recipient-validation/single/'
 
-processFile(args.infile, args.outfile, url, apiKey, 120, args.skip_precheck)
+if args.email:
+    cmdInfile = io.StringIO(args.email.replace(',', '\n'))
+    cmdInfile.name = 'from command line'
+    processFile(cmdInfile, args.outfile, url, apiKey, 120, args.skip_precheck)
+else:
+    processFile(args.infile, args.outfile, url, apiKey, 120, args.skip_precheck)
