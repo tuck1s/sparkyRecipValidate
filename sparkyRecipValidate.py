@@ -68,7 +68,7 @@ def processFile(infile, outfile, url, apiKey, snooze, skip_precheck):
         eprint('Skipping input file syntax pre-check. Validating with SparkPost..')
 
     f = csv.reader(infile)
-    fList = ['email', 'valid', 'reason', 'is_role', 'is_disposable']
+    fList = ['email', 'valid', 'reason', 'is_role', 'is_disposable', 'is_free']
     fh = csv.DictWriter(outfile, fieldnames=fList, restval='', extrasaction='ignore')
     fh.writeheader()
     for r in f:

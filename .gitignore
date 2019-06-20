@@ -2,3 +2,4 @@
 .idea/*
 *.ini
 Pipfile.lock
+setenv.sh
