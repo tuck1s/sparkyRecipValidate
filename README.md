@@ -70,11 +70,14 @@ Recipient addresses should be comma-separated with no spaces.
 ```
 export SPARKPOST_HOST=api.eu.sparkpost.com
 export SPARKPOST_API_KEY=<YOUR KEY HERE>
-./sparkyRecipValidate.py --email 123@gmail.com,bill.gates@microsoft.com
-Scanned input from command line, contains 2 syntactically OK and 0 bad addresses. Validating with SparkPost..
-email,valid,reason,is_role,is_disposable
-123@gmail.com,False,Invalid Recipient,False,False
-bill.gates@microsoft.com,True,,False,False
+./sparkyRecipValidate.py --email 123@gmail.com,bill.gates@microsoft.com,eric@gmal.com
+```
+```
+Scanned input from command line, contains 3 syntactically OK and 0 bad addresses. Validating with SparkPost..
+email,valid,result,reason,is_role,is_disposable,is_free,did_you_mean
+123@gmail.com,False,undeliverable,Invalid Recipient,False,False,True,
+bill.gates@microsoft.com,True,risky,,False,False,False,
+eric@gmal.com,False,,Invalid Domain,False,False,False,eric@gmail.com
 Done
 ```
 
@@ -97,24 +100,26 @@ Comfort reporting goes to `stderr` so you can redirect the actual output to a fi
 ./sparkyRecipValidate.py <valtest.csv >out.csv
 Scanned input file <stdin>, contains 15 syntactically OK and 0 bad addresses. Validating with SparkPost..
 Done
+```
 
+```
 cat out.csv
-email,valid,reason,is_role,is_disposable
-postmaster@yahoo.com,True,,True,False
-admin@geekswithapersonality.com,True,,True,False
-dahoju@heximail.com,True,,False,False
-gpiohwxy@sharklasers.com,True,,False,True
-kobapracro@memeil.top,False,Invalid Domain,False,True
-planetaryhacksaw@maildrop.cc,True,,False,True
-austein@yopmail.com,True,,False,True
-vemugi@banit.me,True,,False,True
-sales@sparkpost.com,True,,True,False
-jeff+friendly@messagesystems.com,True,,False,False
-123a@gmail.com,False,Invalid Recipient,False,False
-sam@hotmal.com,True,,False,False
-abc@yahoo.com,False,Invalid Recipient,False,False
-123@hotmail.com,False,Invalid Recipient,False,False
-sweettomatoes@hottomattoes.com,False,Invalid Domain,False,False
+email,valid,result,reason,is_role,is_disposable,is_free,did_you_mean
+postmaster@yahoo.com,True,valid,,True,False,True,
+admin@geekswithapersonality.com,True,valid,,True,False,False,
+dahoju@heximail.com,True,valid,,False,True,True,
+gpiohwxy@sharklasers.com,True,valid,,False,True,False,
+kobapracro@memeil.top,False,,Invalid Domain,False,True,False,
+planetaryhacksaw@maildrop.cc,True,valid,,False,True,False,
+austein@yopmail.com,True,valid,,False,True,False,
+vemugi@banit.me,True,valid,,False,True,False,
+sales@sparkpost.com,True,valid,,True,False,False,
+jeff+friendly@messagesystems.com,True,valid,,False,False,False,
+123a@gmail.com,False,undeliverable,Invalid Recipient,False,False,True,
+sam@hotmal.com,True,valid,,False,False,False,sam@hotmail.com
+abc@yahoo.com,False,undeliverable,Invalid Recipient,False,False,True,
+123@hotmail.com,True,valid,,False,False,True,
+sweettomatoes@hottomattoes.com,False,,Invalid Domain,False,False,False,
 ```
 
 Excel or [csvkit](https://csvkit.readthedocs.io) may be helpful to work with these files, for example
@@ -123,23 +128,23 @@ Excel or [csvkit](https://csvkit.readthedocs.io) may be helpful to work with the
 $ ./sparkyRecipValidate.py -i valtest.csv | csvlook
 Scanned input file valtest.csv, contains 15 syntactically OK and 0 bad addresses. Validating with SparkPost..
 Done
-| email                            | valid | reason            | is_role | is_disposable |
-| -------------------------------- | ----- | ----------------- | ------- | ------------- |
-| postmaster@yahoo.com             |  True |                   |    True |         False |
-| admin@geekswithapersonality.com  |  True |                   |    True |         False |
-| dahoju@heximail.com              |  True |                   |   False |         False |
-| gpiohwxy@sharklasers.com         |  True |                   |   False |          True |
-| kobapracro@memeil.top            | False | Invalid Domain    |   False |          True |
-| planetaryhacksaw@maildrop.cc     |  True |                   |   False |          True |
-| austein@yopmail.com              |  True |                   |   False |          True |
-| vemugi@banit.me                  |  True |                   |   False |          True |
-| sales@sparkpost.com              |  True |                   |    True |         False |
-| jeff+friendly@messagesystems.com |  True |                   |   False |         False |
-| 123a@gmail.com                   | False | Invalid Recipient |   False |         False |
-| sam@hotmal.com                   |  True |                   |   False |         False |
-| abc@yahoo.com                    |  True |                   |   False |         False |
-| 123@hotmail.com                  | False | Invalid Recipient |   False |         False |
-| sweettomatoes@hottomattoes.com   | False | Invalid Domain    |   False |         False |
+| email                            | valid | result        | reason            | is_role | is_disposable | is_free | did_you_mean    |
+| -------------------------------- | ----- | ------------- | ----------------- | ------- | ------------- | ------- | --------------- |
+| postmaster@yahoo.com             |  True | valid         |                   |    True |         False |    True |                 |
+| admin@geekswithapersonality.com  |  True | valid         |                   |    True |         False |   False |                 |
+| dahoju@heximail.com              |  True | valid         |                   |   False |          True |    True |                 |
+| gpiohwxy@sharklasers.com         |  True | valid         |                   |   False |          True |   False |                 |
+| kobapracro@memeil.top            | False |               | Invalid Domain    |   False |          True |   False |                 |
+| planetaryhacksaw@maildrop.cc     |  True | valid         |                   |   False |          True |   False |                 |
+| austein@yopmail.com              |  True | valid         |                   |   False |          True |   False |                 |
+| vemugi@banit.me                  |  True | valid         |                   |   False |          True |   False |                 |
+| sales@sparkpost.com              |  True | valid         |                   |    True |         False |   False |                 |
+| jeff+friendly@messagesystems.com |  True | valid         |                   |   False |         False |   False |                 |
+| 123a@gmail.com                   | False | undeliverable | Invalid Recipient |   False |         False |    True |                 |
+| sam@hotmal.com                   |  True | valid         |                   |   False |         False |   False | sam@hotmail.com |
+| abc@yahoo.com                    | False | undeliverable | Invalid Recipient |   False |         False |    True |                 |
+| 123@hotmail.com                  |  True | valid         |                   |   False |         False |    True |                 |
+| sweettomatoes@hottomattoes.com   | False |               | Invalid Domain    |   False |         False |   False |                 |
 ```
 
 ## Input file email syntax check
