@@ -13,26 +13,29 @@ def validateRecipient(url, apiKey, recip, snooze):
     :param recip: single recipient
     :return: dict containing JSON-decode of response
     """
-    try:
-        h = {'Authorization': apiKey, 'Accept': 'application/json'}
-        thisReq = requests.compat.urljoin(url, recip)
-        # Allow for possible rate-limiting responses in future, even if not happening now
-        while True:
+    h = {'Authorization': apiKey, 'Accept': 'application/json'}
+    thisReq = requests.compat.urljoin(url, recip)
+    # Allow for possible rate-limiting responses in future, even if not happening now
+    while True:
+        try:
             response = requests.get(thisReq, timeout=60, headers=h)
             if response.status_code == 200:
-                return response.json()
-            elif response.status_code == 429:
-                eprint(response.json(), '.. pausing', snooze, 'seconds for rate-limiting')
-                time.sleep(snooze)
-                continue  # try again
-            else:
-                eprint('Error:', response.status_code, ':', response.text)
-                return None
+                res = response.json()
+                if 'results' in res:
+                    return response.json()
+            # 200 empty reply, or other status code
+            eprint("Request", thisReq)
+            eprint('Error:', response.status_code, ':', response.text, "retrying")
+            eprint('.. pausing', snooze, 'seconds for rate-limiting')
+            time.sleep(snooze)
+            continue
 
-    except ConnectionError as err:
-        eprint('error code', err.status_code)
-        exit(1)
-
+        except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout) as err:
+            eprint("Request", thisReq)
+            eprint('Exception:', err, "retrying")
+            eprint('.. pausing', snooze, 'seconds for rate-limiting')
+            time.sleep(snooze)
+            continue
 
 def processFile(infile, outfile, url, apiKey, snooze, skip_precheck):
     """
@@ -79,7 +82,7 @@ def processFile(infile, outfile, url, apiKey, snooze, skip_precheck):
             row['email'] = recip
             fh.writerow(row)
         else:
-            eprint('Error: response {}'.format(res))
+            eprint('Error: response', res)
 
     infile.close()
     outfile.close()
@@ -107,9 +110,10 @@ apiKey = getenv_check('SPARKPOST_API_KEY')                      # API key is man
 host = hostCleanup(getenv('SPARKPOST_HOST', default='api.sparkpost.com'))
 url = host + '/api/v1/recipient-validation/single/'
 
+snooze=10
 if args.email:
     cmdInfile = io.StringIO(args.email.replace(',', '\n'))
     cmdInfile.name = 'from command line'
-    processFile(cmdInfile, args.outfile, url, apiKey, 120, args.skip_precheck)
+    processFile(cmdInfile, args.outfile, url, apiKey, snooze, args.skip_precheck)
 else:
-    processFile(args.infile, args.outfile, url, apiKey, 120, args.skip_precheck)
+    processFile(args.infile, args.outfile, url, apiKey, snooze, args.skip_precheck)
