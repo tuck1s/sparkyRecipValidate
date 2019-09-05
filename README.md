@@ -71,8 +71,6 @@ Recipient addresses should be comma-separated with no spaces.
 export SPARKPOST_HOST=api.eu.sparkpost.com
 export SPARKPOST_API_KEY=<YOUR KEY HERE>
 ./sparkyRecipValidate.py --email 123@gmail.com,bill.gates@microsoft.com,eric@gmal.com
-```
-```
 Scanned input from command line, contains 3 syntactically OK and 0 bad addresses. Validating with SparkPost..
 email,valid,result,reason,is_role,is_disposable,is_free,did_you_mean
 123@gmail.com,False,undeliverable,Invalid Recipient,False,False,True,
